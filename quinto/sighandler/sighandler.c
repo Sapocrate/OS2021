@@ -17,21 +17,24 @@ sostanzialmente sostituisce il dover usare kill su bash
 
 SBAGLIATO: incompatibilita con codifica utf8 probabilmente,
 ma al posto della system() era piu logico usare la kill().
-Riscrivi il codice usando la 
+Riscrivi il codice usando la
 syscall kill()
 */
 
 int main(int argc, char const *argv[]) {
-  char cmd [50];
-  char pid [10];
-
-  //strcpy(cmd, "kill ");
-  strcat(pid, argv[1]);
+  int pid =atoi(argv[1]);
   if(!strcmp(argv[2], "somma")){
-    strcat(cmd, "kill -SIGUSR2 ");
-    strcat(cmd, pid);
-    printf("%s\n", cmd);
-    system(cmd);
+    kill(pid, SIGUSR2);
+    return 0;
+  }
+
+  if(!strcmp(argv[2], "fine")){
+    kill(pid, SIGINT);
+    return 0;
+  }
+
+  if(!strcmp(argv[2], "differenza")){
+    kill(pid, SIGUSR1);
     return 0;
   }
 

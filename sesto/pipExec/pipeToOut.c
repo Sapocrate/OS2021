@@ -8,7 +8,9 @@
 #include <fcntl.h> //per open
 
 /*
-
+  il programma crea la pipe, crea un processo figlio che esegue upperToPipe
+  passando il File descriptor della pipe per la scrittura, legge sulla pipe,
+  stampa a schermo usando echo e la stringa letta come parametro.
 
 */
 

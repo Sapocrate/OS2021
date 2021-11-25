@@ -32,6 +32,7 @@ void figlio(int num, int fd){
   res= exp(num);
   res= res/num;
   sprintf(msg, "%lf", res);
+  printf("%lf\n",res );
   write(fd, msg, MSG_LEN);
 }
 
@@ -40,27 +41,33 @@ void figlio(int num, int fd){
   double sum=0.0;
   double tmp;
   int pipeFD[2];
+  int pid;
 
   printf("Insert a number (max %d): \n", MAX_NUM);
-  scanf("%d\n", &N);
+  scanf("%d", &N);
   if(N>MAX_NUM || N<=0){
-    printf("input error!");
+    printf("input error! \n");
     return 0;
   }
   pipe(pipeFD); //0 per leggere, 1 per scrivere
+  printf("inserito %d\n", N);
   for(i=0; i<N; i++){
-    if(!fork){
+    pid= fork();
+    if(!pid){
       //figlio
-      figlio(i, pipeFD[1]);
+      printf("figlio %d esegue\n", i );
+      figlio(i+1, pipeFD[1]);
+      return 0;
     }
     else{
       //padre
       char msg[MSG_LEN];
+      waitpid(pid, NULL, WUNTRACED);
       read(pipeFD[0], msg, MSG_LEN);
       sscanf(msg, "%lf", &tmp);
       sum += tmp;
     }
   }
-  printf("%lf\n", sum);
+  printf("valore finale: %lf\n", sum);
   return 0;
 }

@@ -19,8 +19,8 @@ hint: ogni thread chiama le funzioni readFile, sort e writeFile
 
 workflow:
 creazione dei thread (in base ad argc)
-readFile -> leggo prima riga, faccio malloc, leggo riga per riga
-sort -> mergesort
+readFile -> leggo prima riga, faccio malloc, leggo riga per riga -> completato
+sort -> mergesort -> completato
 writeFile -> apro file, scrivo riga per riga, chiudo file
 */
 
@@ -30,11 +30,53 @@ typedef struct {
   int numThread; //Serve perchè i thread possano accedere a lenArray
 } param_thread;
 
+void merge(int* v, int left, int center, int right);
 //variabili globali
 int* lenArray;
 
-void sort(){
+void sort(int * v, int sx, int dx){
+  //implementazione mergesort
+  int centro;
+  if(sx<dx){
+    centro= (sx+dx)/2;
+    sort(v, sx, centro);
+    sort(v, centro+1, dx);
+    merge(v, sx, centro, dx);
+  }
 
+}
+
+void merge(int* v, int left, int center, int right){
+  int i=left;
+  int j= center+1;
+  int k=0;
+  int *temp;
+  temp= (int*) malloc(sizeof(int)* (right-left+1));
+  while(i<=center && j<= right){
+    if(v[i]<=v[j]){
+      temp[k] = v[i];
+      i++;
+    }
+    else{
+      temp[k]= v[j];
+      j++;
+    }
+    k++;
+  }
+  while(i<= center){
+    temp[k] = v[i];
+    i++;
+    k++;
+  }
+  while(j<= right){
+    temp[k] = v[j];
+    j++;
+    k++;
+  }
+  for(k=left; k<=right; k++){
+    v[k]= temp[k-left];
+  }
+  free(temp);
 }
 
 int* readFile(char* input, int index){
@@ -56,8 +98,19 @@ int* readFile(char* input, int index){
   return array;
 }
 
-void writeFile(){
-
+void writeFile(int* array, int index, char* nomefile){
+  int len= lenArray[index];
+  FILE*fp;
+  fp= fopen(nomefile, "w");
+  if(fp==NULL){
+    printf("errore apertura file thread %d\n", index);
+    return;
+  }
+  fprintf(fp, "lunghezza: %d\n", len); //stampo la lunghezza del file
+  for(int i=0; i<len; i++){
+    fprintf(fp, "%d\n", array[i]);
+  }
+  fclose(fp);
 }
 
 void* threadFunction(void * args){
@@ -67,12 +120,8 @@ void* threadFunction(void * args){
   printf("input thread: %s\n", param->nome_file_input);
   printf("output thread: %s\n", param->nome_file_output);
   array= readFile(param->nome_file_input, param->numThread);
-  /* test lettura
-  printf("dentro thread\n");
-  for(int i=0; i<lenArray[param->numThread]; i++){
-    printf("%d\n", array[i]);
-  }
-  */
+  sort(array, 0, lenArray[param->numThread]-1);
+  writeFile(array, param->numThread, param->nome_file_output);
   free(array); //sta al thread liberare il vettore che è stato allocato dinamicamente nella readFile
 }
 
